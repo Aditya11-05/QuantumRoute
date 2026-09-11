@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Environment secrets
+.env
+!.env.example
+
+# Node / frontend
+node_modules/
+dist/
+frontend/dist/
+.vite/
+
+# Generated data (reproducible via scripts/, not committed)
+data/osm/*.graphml
+data/models/*.txt
+data/models/*.json
+data/processed/*.json
+data/benchmarks/*.json
+data/raw/*
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Logs
+*.log

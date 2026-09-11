@@ -1,0 +1,64 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --qr-bg: #0d1117;
+  --qr-panel: #131a2a;
+  --qr-panel-raised: #182036;
+  --qr-border: #232c42;
+  --qr-text: #e4e8f1;
+  --qr-text-muted: #8b95a8;
+  --qr-cyan: #2dd4bf;
+  --qr-cyan-dim: #1a8f81;
+  --qr-amber: #f5a623;
+  --qr-red: #f0524d;
+  --qr-violet: #8b7cf6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--qr-bg);
+  color: var(--qr-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono-qr {
+  font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--qr-border);
+  border-radius: 4px;
+}
+
+.leaflet-container {
+  background: #0a0e17;
+}
+
+button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--qr-cyan);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

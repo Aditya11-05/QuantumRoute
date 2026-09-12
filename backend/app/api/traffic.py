@@ -11,8 +11,27 @@ from app.schemas.traffic import (
 )
 from app.simulation.traffic import TrafficScenario, simulate_traffic
 from app.state import get_graph_state, get_predictor
+from app.api.routing import _build_traffic_snapshot
+from app.data.traffic_map import build_traffic_map_segments
+from app.schemas.routing import RouteRequest
 
 router = APIRouter(tags=["traffic"])
+
+
+@router.post("/traffic/map")
+def traffic_map(req: RouteRequest):
+    """Return the real historical traffic field for the requested timestamp."""
+    lg = get_graph_state()
+
+    try:
+        snapshot, _traffic_meta = _build_traffic_snapshot(req)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return build_traffic_map_segments(
+        lg.graph,
+        snapshot,
+    )
 
 
 @router.post("/traffic/simulate", response_model=TrafficSummary)

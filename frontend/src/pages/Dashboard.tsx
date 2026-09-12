@@ -358,8 +358,10 @@ export default function Dashboard() {
                 source && destination
                   ? (() => {
                       const p = new URLSearchParams({
-                        source: `${source[0]},${source[1]}`,
-                        destination: `${destination[0]},${destination[1]}`,
+                        sourceLat: String(source[0]),
+                        sourceLon: String(source[1]),
+                        destLat: String(destination[0]),
+                        destLon: String(destination[1]),
                         scenario,
                         timestamp,
                         travelTime: String(weights.travel_time),

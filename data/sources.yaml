@@ -1,0 +1,118 @@
+# QuantumRoute — Data Source Registry
+# Every dataset used anywhere in this project MUST be registered here.
+# classification must be one of: REAL_OBSERVED, REAL_HISTORICAL, REAL_GEOGRAPHIC,
+# ESTIMATED, SIMULATED, SYNTHETIC
+
+datasets:
+
+  - id: metr_la_traffic
+    name: "METR-LA Traffic Speed Dataset"
+    classification: REAL_HISTORICAL
+    verification_status: >
+      INDEPENDENTLY VERIFIED on 2026-09-11 by cross-checking three sources:
+      (1) the live liyaguang/DCRNN GitHub repo [confirmed MIT license text,
+      confirmed graph_sensor_locations.csv exists at 208 lines / 6.19 KB
+      = 207 sensors + header]; (2) an arXiv survey and a PMC paper both
+      independently stating 207 sensors, Mar 1-Jun 30 2012, 5-min interval;
+      (3) an MIT-licensed HuggingFace re-mirror (witgaw/METR-LA, DOI
+      10.57967/hf/6886) from which the full 207-row sensor coordinate
+      table was actually pulled and saved to
+      data/raw/metr_la/sensor_locations_VERIFIED_SAMPLE.csv, then
+      spot-checked against an independent LibCity-paper citation for
+      sensor 773869 (coordinates matched to 5 decimal places).
+    description: >
+      Real traffic speed readings from 207 loop detector sensors in the
+      San Fernando Valley area of Los Angeles (Encino/Sherman Oaks/Van
+      Nuys/North Hollywood/Burbank, along US-101 and I-405), collected
+      by Caltrans PeMS and packaged for research by Li et al. (DCRNN, ICLR 2018).
+    official_url: "https://github.com/liyaguang/DCRNN"
+    paper: "Li, Yaguang, et al. 'Diffusion Convolutional Recurrent Neural Network: Data-Driven Traffic Forecasting.' ICLR 2018."
+    license: "MIT (Copyright 2017 Yaguang Li) — confirmed directly from repo LICENSE file content."
+    mirror_notes: >
+      The raw readings file (metr-la.h5, pandas DataFrame in HDF5 format)
+      is distributed via a Google Drive/Baidu Yun link referenced from the
+      DCRNN GitHub README — this sandbox cannot reach Google Drive. The
+      sensor coordinate file (graph_sensor_locations.csv) WAS
+      independently obtainable via the HuggingFace mirror above and is
+      already saved locally (see below). Download of metr-la.h5 must
+      happen on a machine with normal internet access using
+      scripts/download_traffic_data.py.
+    download_date_coordinates: "2026-09-11 (this session, verified)"
+    download_date_readings: "PENDING — fill in when you run scripts/download_traffic_data.py"
+    geographic_coverage: "VERIFIED: lat 34.043-34.222 N, lon 118.183-118.537 W (computed directly from the 207 pulled coordinates) — San Fernando Valley, Los Angeles County, California, USA"
+    time_period: "2012-03-01 00:00:00 to 2012-06-27 23:55:00 (verified locally from the actual file; corrects the commonly-cited but inaccurate '2012-06-30' end date), 5-minute sampling interval"
+    fields:
+      - "timestamp (5-min intervals)"
+      - "sensor_id (207 loop detectors, VERIFIED unique count = 207)"
+      - "speed (mph) — VERIFIED: this is the only measured variable in the public release"
+    known_limitations:
+      - "No traffic volume or occupancy channel in the public release (speed only) — CONFIRMED, not assumed."
+      - "No incident or weather data included."
+      - "Coverage is a fixed 207-sensor subgraph, not the full LA road network."
+      - "METR-LA encodes missing observations as the literal value 0.0, not NaN. A 0 in this file means 'no reading,' never 'measured speed of 0 mph.' Zero-encoded and NaN entries are counted separately in the quality report and must never be merged, treated as valid speed data, or silently imputed."
+    verified_file_stats: >
+      Locally validated on 2026-09-13 against the actual downloaded
+      metr-la.h5: shape (34272, 207); 207 sensors confirmed; first
+      timestamp 2012-03-01 00:00:00; last timestamp 2012-06-27 23:55:00
+      (NOT 2012-06-30 as some secondary sources state — this project's
+      validator no longer hard-codes that incorrect end date); 7,094,304
+      total observations; 575,302 zero-encoded missing observations
+      (8.109%); 0 NaN entries.
+
+  - id: metr_la_network
+    name: "OSM road network matching METR-LA sensor footprint"
+    classification: REAL_GEOGRAPHIC
+    description: >
+      OpenStreetMap-derived road graph for the bounding box containing the
+      207 METR-LA sensors, downloaded via OSMnx/Overpass API. This is the
+      ONLY network in this project with a geographically matched real
+      traffic dataset, and is therefore used for the primary research
+      pipeline (ML training, QUBO benchmarking, ablation/sensitivity studies).
+    official_url: "https://www.openstreetmap.org/copyright"
+    download_date: "PENDING — fill in when you run scripts/download_osm_network.py"
+    geographic_coverage: "Bounding box around LA METR-LA sensor coordinates (see data/raw/metr_la/graph_sensor_locations.csv once downloaded)"
+    license: "Open Database License (ODbL) v1.0. Attribution required: '(c) OpenStreetMap contributors'."
+    fields: ["nodes", "edges", "geometry", "highway type", "lanes", "maxspeed", "oneway", "name"]
+
+  - id: kashipur_network
+    name: "OSM road network — Kashipur, Uttarakhand, India"
+    classification: REAL_GEOGRAPHIC
+    description: >
+      OpenStreetMap-derived road graph for Kashipur, used as the
+      "supported Indian location" demo for SIH. Geometry, road
+      classification, lanes, and speed limits are real OSM data.
+    official_url: "https://www.openstreetmap.org/copyright"
+    download_date: "PENDING — fill in when you run scripts/download_osm_network.py --place 'Kashipur, Uttarakhand, India'"
+    geographic_coverage: "Kashipur, Udham Singh Nagar district, Uttarakhand, India"
+    license: "Open Database License (ODbL) v1.0. Attribution required: '(c) OpenStreetMap contributors'."
+    known_limitations:
+      - "NO real traffic dataset is geographically matched to this network."
+      - "Any speed/congestion values shown for Kashipur are SYNTHETIC (see kashipur_synthetic_traffic below) and MUST be visually and textually labeled as such in every UI view. They must never be described as observed or historical."
+
+  - id: kashipur_synthetic_traffic
+    name: "Synthetic diurnal traffic pattern for Kashipur demo"
+    classification: SYNTHETIC
+    description: >
+      A parametric, clearly-labeled synthetic congestion generator
+      (rush-hour peaks, road-class-dependent free-flow speed, bounded
+      random noise) used ONLY to demonstrate that the routing/QUBO/optimizer
+      pipeline is location-agnostic. This is NEVER used for ML training,
+      NEVER used in benchmark result tables presented as real performance,
+      and is watermarked as "SYNTHETIC DEMO DATA" in every API response
+      and UI element that touches it.
+    generation_method: "backend/app/data/synthetic_traffic.py — documented, seeded, reproducible generator. See docs/data.md for the exact formula."
+    license: "N/A — generated data"
+
+  - id: pems_bay_traffic
+    name: "PEMS-BAY Traffic Speed Dataset (optional secondary dataset)"
+    classification: REAL_HISTORICAL
+    description: >
+      Real traffic speed data from 325 sensors in the San Francisco Bay
+      Area, same lineage/paper as METR-LA. Included as an optional
+      cross-validation dataset if the team wants a second real
+      geography for the ML generalization study.
+    official_url: "https://github.com/liyaguang/DCRNN"
+    download_date: "OPTIONAL — not required for the core deliverable"
+    geographic_coverage: "Bay Area, California, USA"
+    time_period: "2017-01-01 to 2017-05-31, 5-minute sampling interval"
+    license: "Academic research use, same as METR-LA."

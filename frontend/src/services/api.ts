@@ -18,10 +18,14 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     headers: { "Content-Type": "application/json" },
     ...options,
   });
+
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`${options?.method ?? "GET"} ${path} failed: ${res.status} ${body}`);
+    throw new Error(
+      `${options?.method ?? "GET"} ${path} failed: ${res.status} ${body}`
+    );
   }
+
   return res.json() as Promise<T>;
 }
 
@@ -38,10 +42,17 @@ export function getBaselineRoute(
   destination: Coordinate,
   trafficScenario: string,
   weights?: OptimizationWeights,
+  timestamp?: string,
 ): Promise<BaselineResponse> {
   return request<BaselineResponse>("/route/baseline", {
     method: "POST",
-    body: JSON.stringify({ source, destination, traffic_scenario: trafficScenario, weights }),
+    body: JSON.stringify({
+      source,
+      destination,
+      traffic_scenario: trafficScenario,
+      weights,
+      timestamp,
+    }),
   });
 }
 
@@ -50,14 +61,24 @@ export function optimizeRoute(
   destination: Coordinate,
   trafficScenario: string,
   weights?: OptimizationWeights,
+  timestamp?: string,
 ): Promise<OptimizeRouteResponse> {
   return request<OptimizeRouteResponse>("/route/optimize", {
     method: "POST",
-    body: JSON.stringify({ source, destination, traffic_scenario: trafficScenario, weights }),
+    body: JSON.stringify({
+      source,
+      destination,
+      traffic_scenario: trafficScenario,
+      weights,
+      timestamp,
+    }),
   });
 }
 
-export function simulateTraffic(scenario: string, seed = 42): Promise<TrafficSummary> {
+export function simulateTraffic(
+  scenario: string,
+  seed = 42,
+): Promise<TrafficSummary> {
   return request<TrafficSummary>("/traffic/simulate", {
     method: "POST",
     body: JSON.stringify({ scenario, seed }),

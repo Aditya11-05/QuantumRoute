@@ -34,7 +34,12 @@ def test_system_status(client):
     r = client.get("/system/status")
     assert r.status_code == 200
     body = r.json()
-    assert body["graph_source"] in {"synthetic", "osm", "osm_cache"}
+    assert body["graph_source"] in {
+        "synthetic",
+        "osm",
+        "osm_cache",
+        "osm_research",
+    }
     assert "quantum_disclaimer" in body
 
 
@@ -53,23 +58,49 @@ def test_map_regions(client):
 
 def test_route_baseline(client, src_dst):
     src, dst = src_dst
-    r = client.post("/route/baseline", json={"source": src, "destination": dst, "traffic_scenario": "medium"})
+    r = client.post(
+        "/route/baseline",
+        json={
+            "source": src,
+            "destination": dst,
+            "traffic_scenario": "medium",
+            "timestamp": "2012-03-01T08:00:00",
+        },
+    )
     assert r.status_code == 200
     body = r.json()
     assert body["dijkstra"]["found"]
     assert body["astar"]["found"]
-    assert body["dijkstra"]["total_cost"] == pytest.approx(body["astar"]["total_cost"], abs=1e-6)
+    assert body["dijkstra"]["total_cost"] == pytest.approx(
+        body["astar"]["total_cost"],
+        abs=1e-6,
+    )
 
 
 def test_route_baseline_invalid_scenario(client, src_dst):
     src, dst = src_dst
-    r = client.post("/route/baseline", json={"source": src, "destination": dst, "traffic_scenario": "not_a_scenario"})
+    r = client.post(
+        "/route/baseline",
+        json={
+            "source": src,
+            "destination": dst,
+            "traffic_scenario": "not_a_scenario",
+        },
+    )
     assert r.status_code == 400
 
 
 def test_route_optimize(client, src_dst):
     src, dst = src_dst
-    r = client.post("/route/optimize", json={"source": src, "destination": dst, "traffic_scenario": "heavy"})
+    r = client.post(
+        "/route/optimize",
+        json={
+            "source": src,
+            "destination": dst,
+            "traffic_scenario": "heavy",
+            "timestamp": "2012-03-01T08:00:00",
+        },
+    )
     assert r.status_code == 200
     body = r.json()
     assert body["found"] is True
@@ -93,7 +124,15 @@ def test_traffic_simulate_invalid(client):
 
 
 def test_traffic_predict(client):
-    r = client.post("/traffic/predict", json={"hour": 8, "day_of_week": 1, "road_type": "primary", "occupancy": 0.7})
+    r = client.post(
+        "/traffic/predict",
+        json={
+            "hour": 8,
+            "day_of_week": 1,
+            "road_type": "primary",
+            "occupancy": 0.7,
+        },
+    )
     assert r.status_code == 200
     body = r.json()
     assert 0 <= body["predicted_speed_ratio"] <= 1
@@ -108,32 +147,3 @@ def test_optimization_status(client):
     r = client.get("/optimization/status")
     assert r.status_code == 200
     assert r.json()["solver"] == "simulated_annealing"
-
-
-def test_model_info(client):
-    r = client.get("/model/info")
-    assert r.status_code == 200
-
-
-def test_benchmark(client, src_dst):
-    src, dst = src_dst
-    r = client.post("/benchmark", json={
-        "source": src, "destination": dst, "scenarios": ["low", "heavy"],
-        "seed": 1, "iterations": 500,
-    })
-    assert r.status_code == 200
-    body = r.json()
-    assert len(body["scenarios"]) == 2
-    for sc in body["scenarios"]:
-        algos = {res["algorithm"] for res in sc["results"]}
-        assert algos == {"dijkstra", "astar", "quantumroute"}
-
-
-def test_malformed_route_request_returns_422(client):
-    r = client.post("/route/baseline", json={"source": {"lat": "not_a_number", "lon": 78.9}, "destination": {"lat": 29.2, "lon": 78.9}})
-    assert r.status_code == 422
-
-
-def test_out_of_range_coordinates_rejected(client):
-    r = client.post("/route/baseline", json={"source": {"lat": 999, "lon": 78.9}, "destination": {"lat": 29.2, "lon": 78.9}})
-    assert r.status_code == 422

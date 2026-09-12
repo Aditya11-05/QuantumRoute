@@ -41,6 +41,9 @@ export interface BaselineResponse {
   source_snap_distance_m: number;
   destination_snap_distance_m: number;
   traffic_scenario: string;
+  mode?: string;
+  traffic_provenance?: string;
+  timestamp?: string | null;
 }
 
 export interface OptimizeRouteResponse {
@@ -62,6 +65,14 @@ export interface OptimizeRouteResponse {
   graph_source: string;
   region: string;
   quantum_disclaimer: string;
+
+  // Research metadata; supported as the backend evolves.
+  mode?: string;
+  traffic_provenance?: string;
+  timestamp?: string | null;
+  exact_optimal_index?: number | null;
+  sa_matches_exact?: boolean;
+  route_cost_gap_pct?: number | null;
 }
 
 export interface TrafficSummary {

@@ -29,6 +29,8 @@ from typing import Dict, Tuple
 
 import networkx as nx
 
+from app.data.osm_speed import parse_osm_maxspeed_kmh
+
 EdgeKey = Tuple[int, int, int]
 
 
@@ -128,7 +130,12 @@ def simulate_traffic(
         closure_edges = set(rng.sample(range(len(edges)), n_closures))
 
     for idx, (u, v, k, data) in enumerate(edges):
-        free_flow_speed = float(data.get("maxspeed", 30) or 30)
+        free_flow_speed = parse_osm_maxspeed_kmh(data.get("maxspeed"))
+
+        # This fallback exists ONLY for the synthetic/demo simulator.
+        # Research mode never uses this simulator.
+        if free_flow_speed is None:
+            free_flow_speed = 30.0
 
         occupancy = rng.uniform(lo, hi)
         occupancy = max(0.0, min(1.0, occupancy + rng.uniform(-0.05, 0.05)))

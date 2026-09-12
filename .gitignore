@@ -32,3 +32,6 @@ data/raw/*
 
 # Logs
 *.log
+
+# Local runtime cache
+cache/

@@ -124,7 +124,7 @@ export default function Dashboard() {
   return (
     <div className="h-screen w-screen flex flex-col bg-[var(--qr-bg)] text-[var(--qr-text)]">
       <header className="flex items-center justify-between px-6 py-3 border-b border-[var(--qr-border)] bg-[var(--qr-panel)]">
-        <div className="flex items-baseline gap-3">
+<div className="flex items-baseline gap-3">
           <h1 className="text-lg font-semibold tracking-tight">
             QuantumRoute
           </h1>
@@ -352,6 +352,34 @@ export default function Dashboard() {
           >
             {loading ? "Optimizing…" : "Run route analysis"}
           </button>
+
+            <a
+              href={
+                source && destination
+                  ? (() => {
+                      const p = new URLSearchParams({
+                        source: `${source[0]},${source[1]}`,
+                        destination: `${destination[0]},${destination[1]}`,
+                        scenario,
+                        timestamp,
+                        travelTime: String(weights.travel_time),
+                        congestion: String(weights.congestion),
+                        distance: String(weights.distance),
+                        fuel: String(weights.fuel),
+                        intersection: String(weights.intersection),
+                        incident: String(weights.incident),
+                      });
+                      return `/analysis?${p.toString()}`;
+                    })()
+                  : "#"
+              }
+              className="analysis-button"
+              onClick={(e) => {
+                if (!source || !destination) e.preventDefault();
+              }}
+            >
+              ANALYSIS →
+            </a>
 
           {runError && (
             <p className="text-xs text-[var(--qr-red)]">

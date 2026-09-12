@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import benchmark, optimization, routing, system, traffic
+from app.api import analysis, benchmark, optimization, routing, system, traffic
 from app.config.settings import get_settings
 from app.state import init_state
 
@@ -34,10 +34,10 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -63,3 +63,4 @@ app.include_router(routing.router)
 app.include_router(traffic.router)
 app.include_router(optimization.router)
 app.include_router(benchmark.router)
+app.include_router(analysis.router)
